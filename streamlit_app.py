@@ -169,25 +169,18 @@ if generate_btn:
             else:
                 client = OpenAI(api_key=openai_api_key)
                 
-                # UPDATED PROMPT: Explicitly matches against the "Packages" section on the website
                 package_prompt = f"""
                 You are a Solution Architect for The Weather Company.
+                SCRAPED DOCS CONTENT: {scraped_text[:10000]}
+                CLIENT NEED: "{user_query}"
                 
-                SCRAPED DOCS CONTENT FROM WEBSITE:
-                {scraped_text[:12000]}
-                
-                CLIENT NEED (QUERY):
-                "{user_query}"
-                
-                INSTRUCTIONS:
-                1. Look through the scraped text specifically for the section/header labeled "Packages" (or official package offerings listed on the website).
-                2. Identify the EXACT official Package name(s) listed under that Packages section that contain the endpoints/data needed for the client's request.
-                3. Structure the output into 4 clear sections using Markdown:
+                Build a crisp, executive solution package for the client.
+                Format using clean Markdown with headers and bullet points:
 
-                   - 📦 **Official Website Package Match** (State the EXACT package name(s) as listed under the 'Packages' header on the website).
-                   - 🏷️ **Endpoints Residing in this Package** (List the specific API endpoints/data fields from the page that belong to this package).
-                   - 🛠️ **Included Capabilities (Layman's Terms)** (Explain what the endpoints inside this package actually do in simple plain English).
-                   - 🎯 **Business Alignment** (Explain why subscribing to this specific package fulfills the client's requirements).
+                1. 📦 **Recommended Package Name & Executive Summary** (Layman summary of the total solution).
+                2. 🏷️ **Required API Packages & Endpoints** (Specify EXACTLY which Weather Company package tier or API product—e.g., Core Weather Data, Historical On-Demand Package, Severe Weather Package, Location Services—each suggested endpoint resides in).
+                3. 🛠️ **Included Capabilities** (Translate technical parameters into simple plain-English features/benefits).
+                4. 🎯 **Business Value & Alignment** (Explain why this specific package combination fits their exact query).
                 """
 
                 response = client.chat.completions.create(
