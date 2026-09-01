@@ -50,8 +50,7 @@ WEATHER_THEME_CSS = """
         margin-bottom: 0;
     }
 
-    /* --- ULTRA-PROMINENT SEARCH BOX STYLING --- */
-    /* Search Box Label */
+    /* --- PROMINENT SEARCH INPUT FIELD STYLING --- */
     div[data-testid="stTextInput"] label {
         font-size: 1.35rem !important;
         font-weight: 800 !important;
@@ -59,26 +58,23 @@ WEATHER_THEME_CSS = """
         margin-bottom: 12px !important;
     }
     
-    /* 8px Ultra-Thick High-Contrast Border */
     div[data-testid="stTextInput"] > div,
     div[data-testid="stTextInput"] div[data-baseweb="input"] {
         border: 3px solid #003366 !important;
-        border-radius: 14px !important;
+        border-radius: 12px !important;
         background-color: #ffffff !important;
-        box-shadow: 0 8px 25px rgba(0, 51, 102, 0.3) !important;
-        padding: 4px !important;
+        box-shadow: 0 6px 18px rgba(0, 51, 102, 0.18) !important;
+        padding: 2px !important;
     }
     
-    /* Highlight state on hover / typing */
     div[data-testid="stTextInput"] > div:hover,
     div[data-testid="stTextInput"] > div:focus-within {
-        border-color: #00509e !important; /* Shifts to bright blue on active */
-        box-shadow: 0 10px 30px rgba(0, 80, 158, 0.45) !important;
+        border-color: #00509e !important;
+        box-shadow: 0 8px 22px rgba(0, 80, 158, 0.3) !important;
     }
 
-    /* Text typed inside search box */
     div[data-testid="stTextInput"] input {
-        font-size: 1.25rem !important;
+        font-size: 1.2rem !important;
         font-weight: 600 !important;
         padding: 12px 16px !important;
         color: #000000 !important;
@@ -95,7 +91,7 @@ WEATHER_THEME_CSS = """
     }
     
     /* Buttons */
-    .stButton>button {
+    .stButton>button, div[data-testid="stFormSubmitButton"]>button {
         background-color: #00509e !important;
         color: white !important;
         border-radius: 8px !important;
@@ -105,24 +101,9 @@ WEATHER_THEME_CSS = """
         padding: 12px 28px !important;
         transition: all 0.3s ease;
     }
-    .stButton>button:hover {
+    .stButton>button:hover, div[data-testid="stFormSubmitButton"]>button:hover {
         background-color: #003366 !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    
-    /* Green Source Links */
-    a.weather-link-btn {
-        display: inline-block;
-        background-color: #28a745;
-        color: white !important;
-        padding: 12px 20px;
-        text-decoration: none;
-        border-radius: 6px;
-        font-weight: bold;
-        margin-top: 15px;
-    }
-    a.weather-link-btn:hover {
-        background-color: #218838;
     }
 </style>
 """
@@ -161,27 +142,27 @@ def scrape_webpage(url):
     except Exception as e:
         return None, str(e)
 
-# --- INPUT SECTION ---
-col1, col2 = st.columns([2, 1])
+# --- INPUT SECTION (FORM ENABLES ENTER/RETURN KEY TO SEARCH) ---
+with st.form(key="search_form", border=False):
+    col1, col2 = st.columns([2, 1])
 
-with col1:
-    user_query = st.text_input(
-        "Type off of your required needs",
-        placeholder="e.g., I need historical wind speeds and gust alerts in Poland for insurance claims."
-    )
+    with col1:
+        user_query = st.text_input(
+            "Type off of your required needs",
+            placeholder="e.g., I need historical wind speeds and gust alerts in Poland for insurance claims."
+        )
 
-with col2:
-    source_url = st.text_input(
-        "Weather Documentation URL:",
-        value="https://developer.weather.com/docs/home"
-    )
+    with col2:
+        source_url = st.text_input(
+            "Weather Documentation URL:",
+            value="https://developer.weather.com/docs/home"
+        )
 
-# --- ACTION BUTTONS ---
-btn_col1, btn_col2, _ = st.columns([2, 1, 2])
+    btn_col1, btn_col2, _ = st.columns([2, 1, 2])
+    with btn_col1:
+        generate_btn = st.form_submit_button("Generate Tailored Solution Package")
 
-with btn_col1:
-    generate_btn = st.button("Generate Tailored Solution Package")
-
+# Refresh button sits outside form
 with btn_col2:
     if st.button("🔄 Refresh Page"):
         st.rerun()
@@ -220,9 +201,9 @@ if generate_btn:
                 
                 result_text = response.choices[0].message.content
 
-               # --- RESULT DISPLAY CARD ---
+                # --- RESULT DISPLAY CARD (CLEAN STREAMLIT COMPONENTS) ---
+                st.markdown("---")
                 with st.container():
-                    st.markdown("### 📦 Generated Solution Package")
                     st.markdown(result_text)
                     st.divider()
                     st.link_button(f"🔗 Open Scraped Source Documentation ({source_url})", source_url)
