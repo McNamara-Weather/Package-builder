@@ -50,7 +50,7 @@ WEATHER_THEME_CSS = """
         margin-bottom: 0;
     }
 
-    /* --- PROMINENT SEARCH INPUT FIELD STYLING --- */
+    /* --- VERY THICK BORDER AROUND SEARCH INPUT FIELD --- */
     .stTextInput label {
         font-size: 1.25rem !important;
         font-weight: 700 !important;
@@ -58,17 +58,19 @@ WEATHER_THEME_CSS = """
         margin-bottom: 10px !important;
     }
     
+    /* 5px Extra Thick Navy Blue Border */
     div[data-baseweb="input"] {
-        border: 2.5px solid #00509e !important;
-        border-radius: 10px !important;
+        border: 5px solid #00509e !important;
+        border-radius: 12px !important;
         background-color: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(0, 80, 158, 0.12) !important;
+        box-shadow: 0 6px 18px rgba(0, 80, 158, 0.2) !important;
         transition: all 0.3s ease !important;
     }
     
-    div[data-baseweb="input"]:hover {
+    /* Darkens on hover/click */
+    div[data-baseweb="input"]:hover, div[data-baseweb="input"]:focus-within {
         border-color: #002244 !important;
-        box-shadow: 0 6px 18px rgba(0, 80, 158, 0.22) !important;
+        box-shadow: 0 8px 24px rgba(0, 80, 158, 0.35) !important;
     }
 
     div[data-baseweb="input"] input {
