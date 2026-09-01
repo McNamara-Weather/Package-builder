@@ -62,7 +62,7 @@ WEATHER_THEME_CSS = """
     /* 8px Ultra-Thick High-Contrast Border */
     div[data-testid="stTextInput"] > div,
     div[data-testid="stTextInput"] div[data-baseweb="input"] {
-        border: 8px solid #003366 !important; /* Extremely thick dark navy border */
+        border: 3px solid #003366 !important;
         border-radius: 14px !important;
         background-color: #ffffff !important;
         box-shadow: 0 8px 25px rgba(0, 51, 102, 0.3) !important;
