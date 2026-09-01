@@ -136,7 +136,7 @@ st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
 # --- BRANDED HEADER WITH LOGO ---
 st.markdown("""
 <div class="weather-header">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/The_Weather_Channel_logo.svg" alt="TWC Logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/The_Weather_Channel_logo.svg/320px-The_Weather_Channel_logo.svg.png" alt="TWC Logo">
     <div>
         <h1>The Weather Company — Data Package Configurator</h1>
         <p>Layman Requirements Scraper & API Package Alignment Engine</p>
