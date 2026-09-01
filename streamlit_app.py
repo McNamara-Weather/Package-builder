@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
-import re  # Added for Regular Expression PII Detection
+import re  # Used for Regular Expression PII & Company Name Detection
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
@@ -17,22 +17,24 @@ if "OPENAI_API_KEY" in st.secrets:
 else:
     openai_api_key = ""
 
-# --- PII DETECTION GUARDRAIL FUNCTION ---
-def check_for_pii(text):
+# --- SECURITY GUARDRAIL FUNCTION (PII & COMPANY NAME SCANNER) ---
+def check_for_restricted_data(text):
     """
-    Scans input text for sensitive PII data formats.
-    Returns (True, "PII Type") if detected, otherwise (False, None).
+    Scans input text for sensitive PII and Company/Organization Name patterns.
+    Returns (True, "Type") if detected, otherwise (False, None).
     """
     patterns = {
         "Social Security Number (SSN)": r'\b\d{3}[-.\s]?\d{2}[-.\s]?\d{4}\b',
         "Credit/Debit Card Number": r'\b(?:\d[ -]*?){13,16}\b',
         "Email Address": r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
-        "Phone Number": r'\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'
+        "Phone Number": r'\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
+        # Detects corporate identifiers (Inc, LLC, Corp, Ltd, Company, Group, GmbH, Holdings, etc.)
+        "Company / Organization Name": r'\b[A-Za-z0-9&.\'-]+\s+(?:Inc|Inc\.|LLC|Corp|Corp\.|Corporation|Ltd|Ltd\.|Limited|Co|Company|Group|Holdings|GmbH|PLC)\b'
     }
     
-    for pii_type, pattern in patterns.items():
-        if re.search(pattern, text):
-            return True, pii_type
+    for data_type, pattern in patterns.items():
+        if re.search(pattern, text, re.IGNORECASE):
+            return True, data_type
             
     return False, None
 
@@ -176,17 +178,21 @@ if st.button("🔄 Refresh Page"):
 
 # --- EXECUTION PIPELINE ---
 if generate_btn:
-    # 🛑 STEP 1: PII CHECK (Failsafe before doing anything)
-    has_pii, pii_type = check_for_pii(user_query)
+    # 🛑 SECURITY CHECK: Scan for PII and Company Names
+    has_restricted_data, data_type = check_for_restricted_data(user_query)
     
-    if has_pii:
-        st.error(f"⚠️ **Security Alert: Potential PII Detected ({pii_type}).**\n\nFor privacy and compliance reasons, queries containing sensitive personal data (e.g., SSNs, credit cards, emails, or phone numbers) cannot be processed. Please remove this information and try again.")
+    if has_restricted_data:
+        st.error(
+            f"⚠️ **Security Alert: Restricted Information Detected ({data_type}).**\n\n"
+            f"For privacy and compliance reasons, queries containing personal data (SSNs, credit cards, emails, phone numbers) "
+            f"or specific company/organization names cannot be processed. Please remove this information and try again."
+        )
     elif not openai_api_key:
         st.error("OpenAI API Key is missing. Please ensure OPENAI_API_KEY is configured in Streamlit Secrets.")
     elif not user_query or not source_url:
         st.error("Please fill in your required needs.")
     else:
-        # STEP 2: Proceed with scraping and AI package generation
+        # Proceed with scraping & generating response
         with st.spinner("Scraping documentation & aligning package..."):
             scraped_text, error = scrape_webpage(source_url)
             
