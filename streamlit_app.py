@@ -109,7 +109,7 @@ st.markdown("""
         <circle cx="45" cy="42" r="14" fill="#ffcc00"/>
     </svg>
     <div>
-        <h1>WxData — Package Configurator</h1>
+        <h1>The Weather Company — Data Package Configurator</h1>
         <p>Layman Requirements Scraper & API Package Alignment Engine</p>
     </div>
 </div>
@@ -138,8 +138,8 @@ with st.form(key="search_form", border=False):
 
     with col1:
         user_query = st.text_input(
-            "Type the required needs",
-            placeholder="e.g., I need to or I want to etc..."
+            "Type off of your required needs",
+            placeholder="e.g., I need historical wind speeds and gust alerts in Poland for insurance claims."
         )
 
     with col2:
@@ -169,16 +169,25 @@ if generate_btn:
             else:
                 client = OpenAI(api_key=openai_api_key)
                 
+                # UPDATED PROMPT: Explicitly matches against the "Packages" section on the website
                 package_prompt = f"""
                 You are a Solution Architect for The Weather Company.
-                SCRAPED DOCS CONTENT: {scraped_text[:10000]}
-                CLIENT NEED: "{user_query}"
                 
-                Build a crisp, modern package summary for the client.
-                Format using clean HTML/Markdown with headers and bullet points:
-                1. Package Title & Summary (Layman summary)
-                2. Included Data Features (Translate technical terms to simple plain-English capabilities)
-                3. Business Value & Alignment (Why this fits their exact query)
+                SCRAPED DOCS CONTENT FROM WEBSITE:
+                {scraped_text[:12000]}
+                
+                CLIENT NEED (QUERY):
+                "{user_query}"
+                
+                INSTRUCTIONS:
+                1. Look through the scraped text specifically for the section/header labeled "Packages" (or official package offerings listed on the website).
+                2. Identify the EXACT official Package name(s) listed under that Packages section that contain the endpoints/data needed for the client's request.
+                3. Structure the output into 4 clear sections using Markdown:
+
+                   - 📦 **Official Website Package Match** (State the EXACT package name(s) as listed under the 'Packages' header on the website).
+                   - 🏷️ **Endpoints Residing in this Package** (List the specific API endpoints/data fields from the page that belong to this package).
+                   - 🛠️ **Included Capabilities (Layman's Terms)** (Explain what the endpoints inside this package actually do in simple plain English).
+                   - 🎯 **Business Alignment** (Explain why subscribing to this specific package fulfills the client's requirements).
                 """
 
                 response = client.chat.completions.create(
