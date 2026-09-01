@@ -11,7 +11,6 @@ st.set_page_config(
 )
 
 # --- THE WEATHER COMPANY CUSTOM STYLING (CSS) ---
-# --- THE WEATHER COMPANY CUSTOM STYLING (CSS) ---
 WEATHER_THEME_CSS = """
 <style>
     /* Global Styles */
@@ -131,16 +130,7 @@ WEATHER_THEME_CSS = """
 """
 
 st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
-
-# -------------------------------------------------------------------
-# 1. THIS IS THE END OF YOUR CSS SECTION (Look for this line)
-# -------------------------------------------------------------------
-st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
-
-
-# ===================================================================
-# 2. PLACE THE BRANDED HEADER LOGO CODE RIGHT HERE:
-# ===================================================================
+# --- BRANDED HEADER WITH LOGO ---
 st.markdown("""
 <div class="weather-header">
     <img src="https://logos-world.net/wp-content/uploads/2021/08/The-Weather-Channel-Logo.png" alt="TWC Logo">
