@@ -50,33 +50,38 @@ WEATHER_THEME_CSS = """
         margin-bottom: 0;
     }
 
-    /* --- VERY THICK BORDER AROUND SEARCH INPUT FIELD --- */
-    .stTextInput label {
-        font-size: 1.25rem !important;
-        font-weight: 700 !important;
-        color: #003366 !important;
-        margin-bottom: 10px !important;
+    /* --- ULTRA-PROMINENT SEARCH BOX STYLING --- */
+    /* Search Box Label */
+    div[data-testid="stTextInput"] label {
+        font-size: 1.35rem !important;
+        font-weight: 800 !important;
+        color: #002244 !important;
+        margin-bottom: 12px !important;
     }
     
-    /* 5px Extra Thick Navy Blue Border */
-    div[data-baseweb="input"] {
-        border: 5px solid #00509e !important;
-        border-radius: 12px !important;
+    /* 8px Ultra-Thick High-Contrast Border */
+    div[data-testid="stTextInput"] > div,
+    div[data-testid="stTextInput"] div[data-baseweb="input"] {
+        border: 8px solid #003366 !important; /* Extremely thick dark navy border */
+        border-radius: 14px !important;
         background-color: #ffffff !important;
-        box-shadow: 0 6px 18px rgba(0, 80, 158, 0.2) !important;
-        transition: all 0.3s ease !important;
+        box-shadow: 0 8px 25px rgba(0, 51, 102, 0.3) !important;
+        padding: 4px !important;
     }
     
-    /* Darkens on hover/click */
-    div[data-baseweb="input"]:hover, div[data-baseweb="input"]:focus-within {
-        border-color: #002244 !important;
-        box-shadow: 0 8px 24px rgba(0, 80, 158, 0.35) !important;
+    /* Highlight state on hover / typing */
+    div[data-testid="stTextInput"] > div:hover,
+    div[data-testid="stTextInput"] > div:focus-within {
+        border-color: #00509e !important; /* Shifts to bright blue on active */
+        box-shadow: 0 10px 30px rgba(0, 80, 158, 0.45) !important;
     }
 
-    div[data-baseweb="input"] input {
-        font-size: 1.15rem !important;
-        padding: 14px 16px !important;
-        color: #1a1a1a !important;
+    /* Text typed inside search box */
+    div[data-testid="stTextInput"] input {
+        font-size: 1.25rem !important;
+        font-weight: 600 !important;
+        padding: 12px 16px !important;
+        color: #000000 !important;
     }
     
     /* Card Container */
