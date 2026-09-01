@@ -2,7 +2,8 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 from openai import OpenAI
-import re  # Used for Regular Expression PII, Company, and Name Detection
+import re
+import json
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
@@ -17,40 +18,54 @@ if "OPENAI_API_KEY" in st.secrets:
 else:
     openai_api_key = ""
 
-# --- ALLOWED GEOGRAPHIC & WEATHER TERMS (Prevents false positive name blocks) ---
-ALLOWED_CAPITALIZED_TERMS = {
-    "poland", "warsaw", "gdansk", "krakow", "wroclaw", "poznan", "baltic", "sea", 
-    "europe", "weather", "company", "january", "february", "march", "april", "may", 
-    "june", "july", "august", "september", "october", "november", "december", 
-    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
-}
-
-# --- SECURITY GUARDRAIL FUNCTION (PII, COMPANY & HUMAN NAME SCANNER) ---
-def check_for_restricted_data(text):
+# --- AI & REGEX SECURITY GUARDRAIL FUNCTION ---
+def check_for_restricted_data(text, client):
     """
     Scans input text for sensitive PII, Company Names, and Personal Human Names.
-    Returns (True, "Type") if detected, otherwise (False, None).
+    Uses fast Regex for hard metrics, and AI Guardrail for contextual Names & Companies.
     """
-    # 1. Structural Patterns (SSN, Cards, Email, Phone, Corporate Suffixes)
+    # 1. Fast Regex for Rigid PII (SSN, Cards, Emails, Phones)
     patterns = {
         "Social Security Number (SSN)": r'\b\d{3}[-.\s]?\d{2}[-.\s]?\d{4}\b',
         "Credit/Debit Card Number": r'\b(?:\d[ -]*?){13,16}\b',
         "Email Address": r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
-        "Phone Number": r'\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
-        "Company / Organization Name": r'\b[A-Za-z0-9&.\'-]+\s+(?:Inc|Inc\.|LLC|Corp|Corp\.|Corporation|Ltd|Ltd\.|Limited|Co|Company|Group|Holdings|GmbH|PLC)\b'
+        "Phone Number": r'\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b'
     }
     
     for data_type, pattern in patterns.items():
         if re.search(pattern, text, re.IGNORECASE):
             return True, data_type
 
-    # 2. Personal Human Name Pattern (Detects "Firstname Lastname" like John Sullivan)
-    potential_names = re.findall(r'\b[A-Z][a-z]+\s+[A-Z][a-z]+\b', text)
-    for pair in potential_names:
-        words = pair.lower().split()
-        if not any(word in ALLOWED_CAPITALIZED_TERMS for word in words):
-            return True, f"Person Name ({pair})"
-            
+    # 2. AI Security Pre-Check for Human Names & Company Names
+    guardrail_prompt = f"""
+    Analyze the following user search query for compliance: "{text}"
+
+    Does this query contain ANY of the following restricted items?
+    1. Personal Human Names (e.g., "John Sullivan", "John", "Sullivan", "Mary", etc., regardless of capitalization).
+    2. Specific Company / Organization / Brand Names (e.g., "Acme", "IBM", "Google", "Walmart", etc.).
+    3. Any other Personally Identifiable Information (PII).
+
+    Return ONLY a JSON object formatted as follows:
+    {{
+        "contains_restricted_info": true or false,
+        "detected_type": "Person Name" or "Company Name" or "PII" or "None",
+        "detected_value": "exact word or name detected"
+    }}
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": guardrail_prompt}],
+            response_format={"type": "json_object"}
+        )
+        result = json.loads(response.choices[0].message.content)
+        
+        if result.get("contains_restricted_info"):
+            return True, f"{result.get('detected_type')} ({result.get('detected_value')})"
+    except Exception:
+        pass # Fallback if AI check fails
+
     return False, None
 
 # --- THE WEATHER COMPANY CUSTOM STYLING (CSS) ---
@@ -169,7 +184,7 @@ def scrape_webpage(url):
     except Exception as e:
         return None, str(e)
 
-# --- INPUT FORM (ENABLES ENTER KEY TO EXECUTE SEARCH) ---
+# --- INPUT FORM ---
 with st.form(key="search_form", border=False):
     col1, col2 = st.columns([2, 1])
 
@@ -187,58 +202,60 @@ with st.form(key="search_form", border=False):
 
     generate_btn = st.form_submit_button("Generate Tailored Solution Package")
 
-# Refresh button placed cleanly outside form
+# Refresh button
 if st.button("🔄 Refresh Page"):
     st.rerun()
 
 # --- EXECUTION PIPELINE ---
 if generate_btn:
-    # 🛑 SECURITY CHECK: Scan for PII, Company Names, and Personal Names
-    has_restricted_data, data_type = check_for_restricted_data(user_query)
-    
-    if has_restricted_data:
-        st.error(
-            f"⚠️ **Security Alert: Restricted Information Detected ({data_type}).**\n\n"
-            f"For privacy and compliance reasons, queries containing personal data (SSNs, credit cards, emails, phone numbers, human names) "
-            f"or specific company/organization names cannot be processed. Please remove this information and try again."
-        )
-    elif not openai_api_key:
+    if not openai_api_key:
         st.error("OpenAI API Key is missing. Please ensure OPENAI_API_KEY is configured in Streamlit Secrets.")
     elif not user_query or not source_url:
         st.error("Please fill in your required needs.")
     else:
-        # Proceed with scraping & generating response
-        with st.spinner("Scraping documentation & aligning package..."):
-            scraped_text, error = scrape_webpage(source_url)
-            
-            if error:
-                st.error(f"Error scraping docs: {error}")
-            else:
-                client = OpenAI(api_key=openai_api_key)
+        client = OpenAI(api_key=openai_api_key)
+        
+        # 🛑 AI SECURITY GUARDRAIL CHECK
+        has_restricted_data, data_type = check_for_restricted_data(user_query, client)
+        
+        if has_restricted_data:
+            st.error(
+                f"⚠️ **Security Alert: Restricted Information Detected ({data_type}).**\n\n"
+                f"For privacy and compliance reasons, queries containing personal human names, company names, "
+                f"or sensitive personal data (SSNs, credit cards, emails, phone numbers) cannot be processed. "
+                f"Please remove this information and try again."
+            )
+        else:
+            # Proceed with scraping & package generation
+            with st.spinner("Scraping documentation & aligning package..."):
+                scraped_text, error = scrape_webpage(source_url)
                 
-                package_prompt = f"""
-                You are a Solution Architect for The Weather Company.
-                SCRAPED DOCS CONTENT: {scraped_text[:10000]}
-                CLIENT NEED: "{user_query}"
-                
-                Build a crisp, executive solution package for the client.
-                Format using clean Markdown with headers and bullet points:
+                if error:
+                    st.error(f"Error scraping docs: {error}")
+                else:
+                    package_prompt = f"""
+                    You are a Solution Architect for The Weather Company.
+                    SCRAPED DOCS CONTENT: {scraped_text[:10000]}
+                    CLIENT NEED: "{user_query}"
+                    
+                    Build a crisp, executive solution package for the client.
+                    Format using clean Markdown with headers and bullet points:
 
-                1. 📦 **Recommended Package Name & Executive Summary** (Layman summary of the total solution).
-                2. 🏷️ **Required API Packages & Endpoints** (Specify EXACTLY which Weather Company package tier or API product—e.g., Core Weather Data, Historical On-Demand Package, Severe Weather Package, Location Services—each suggested endpoint resides in).
-                3. 🛠️ **Included Capabilities** (Translate technical parameters into simple plain-English features/benefits).
-                4. 🎯 **Business Value & Alignment** (Explain why this specific package combination fits their exact query).
-                """
+                    1. 📦 **Recommended Package Name & Executive Summary** (Layman summary of the total solution).
+                    2. 🏷️ **Required API Packages & Endpoints** (Specify EXACTLY which Weather Company package tier or API product—e.g., Core Weather Data, Historical On-Demand Package, Severe Weather Package, Location Services—each suggested endpoint resides in).
+                    3. 🛠️ **Included Capabilities** (Translate technical parameters into simple plain-English features/benefits).
+                    4. 🎯 **Business Value & Alignment** (Explain why this specific package combination fits their exact query).
+                    """
 
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[{"role": "user", "content": package_prompt}]
-                )
-                
-                result_text = response.choices[0].message.content
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[{"role": "user", "content": package_prompt}]
+                    )
+                    
+                    result_text = response.choices[0].message.content
 
-                # --- RESULT DISPLAY CARD ---
-                st.markdown("---")
-                st.markdown(result_text)
-                st.divider()
-                st.link_button(f"🔗 Open Scraped Source Documentation ({source_url})", source_url)
+                    # --- RESULT DISPLAY CARD ---
+                    st.markdown("---")
+                    st.markdown(result_text)
+                    st.divider()
+                    st.link_button(f"🔗 Open Scraped Source Documentation ({source_url})", source_url)
