@@ -140,12 +140,20 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-# ===================================================================
-
-
-# -------------------------------------------------------------------
-# 3. THIS IS WHAT COMES RIGHT AFTER IT (Your sidebar section)
-# -------------------------------------------------------------------
+# --- BRANDED HEADER WITH LOGO ---
+st.markdown("""
+<div class="weather-header">
+    <svg width="65" height="65" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <rect width="120" height="120" rx="20" fill="#00509e"/>
+        <path d="M 30,65 A 20,20 0 0,1 65,50 A 25,25 0 0,1 100,65 A 15,15 0 0,1 95,90 L 30,90 A 15,15 0 0,1 30,65 Z" fill="#ffffff"/>
+        <circle cx="45" cy="42" r="14" fill="#ffcc00"/>
+    </svg>
+    <div>
+        <h1>The Weather Company — Data Package Configurator</h1>
+        <p>Layman Requirements Scraper & API Package Alignment Engine</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 with st.sidebar:
     st.header("Admin Controls")
     ...
