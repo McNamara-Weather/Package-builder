@@ -133,16 +133,6 @@ st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
 # --- BRANDED HEADER WITH LOGO ---
 st.markdown("""
 <div class="weather-header">
-    <img src="https://logos-world.net/wp-content/uploads/2021/08/The-Weather-Channel-Logo.png" alt="TWC Logo">
-    <div>
-        <h1>The Weather Company — Data Package Configurator</h1>
-        <p>Layman Requirements Scraper & API Package Alignment Engine</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-# --- BRANDED HEADER WITH LOGO ---
-st.markdown("""
-<div class="weather-header">
     <svg width="65" height="65" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
         <rect width="120" height="120" rx="20" fill="#00509e"/>
         <path d="M 30,65 A 20,20 0 0,1 65,50 A 25,25 0 0,1 100,65 A 15,15 0 0,1 95,90 L 30,90 A 15,15 0 0,1 30,65 Z" fill="#ffffff"/>
