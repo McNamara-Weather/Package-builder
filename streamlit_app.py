@@ -11,6 +11,7 @@ st.set_page_config(
 )
 
 # --- THE WEATHER COMPANY CUSTOM STYLING (CSS) ---
+# --- THE WEATHER COMPANY CUSTOM STYLING (CSS) ---
 WEATHER_THEME_CSS = """
 <style>
     /* Global Styles */
@@ -19,7 +20,7 @@ WEATHER_THEME_CSS = """
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     
-    /* Top Header Banner */
+    /* Top Header Banner with Logo */
     .weather-header {
         background: linear-gradient(135deg, #003366 0%, #00509e 100%);
         padding: 24px;
@@ -27,6 +28,16 @@ WEATHER_THEME_CSS = """
         color: white;
         margin-bottom: 25px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .weather-header img {
+        height: 65px;
+        background-color: #ffffff;
+        padding: 6px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .weather-header h1 {
         color: #ffffff !important;
@@ -38,6 +49,34 @@ WEATHER_THEME_CSS = """
         color: #b0c4de !important;
         margin-top: 5px;
         font-size: 1.05rem;
+        margin-bottom: 0;
+    }
+
+    /* --- PROMINENT SEARCH INPUT FIELD STYLING --- */
+    .stTextInput label {
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        color: #003366 !important;
+        margin-bottom: 8px !important;
+    }
+    
+    div[data-baseweb="input"] {
+        border: 2.5px solid #00509e !important;
+        border-radius: 10px !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(0, 80, 158, 0.12) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    div[data-baseweb="input"]:hover {
+        border-color: #002244 !important;
+        box-shadow: 0 6px 18px rgba(0, 80, 158, 0.22) !important;
+    }
+
+    div[data-baseweb="input"] input {
+        font-size: 1.1rem !important;
+        padding: 12px 14px !important;
+        color: #1a1a1a !important;
     }
     
     /* Card Container */
@@ -54,15 +93,16 @@ WEATHER_THEME_CSS = """
     .stButton>button {
         background-color: #00509e !important;
         color: white !important;
-        border-radius: 6px !important;
+        border-radius: 8px !important;
         border: none !important;
-        font-weight: 600 !important;
-        padding: 10px 24px !important;
+        font-weight: 700 !important;
+        font-size: 1.05rem !important;
+        padding: 12px 28px !important;
         transition: all 0.3s ease;
     }
     .stButton>button:hover {
         background-color: #003366 !important;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
     /* Links */
@@ -93,11 +133,14 @@ WEATHER_THEME_CSS = """
 
 st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
 
-# --- BRANDED HEADER ---
+# --- BRANDED HEADER WITH LOGO ---
 st.markdown("""
 <div class="weather-header">
-    <h1>🌤️ The Weather Company — Data Package Configurator</h1>
-    <p>Layman Requirements Scraper & API Package Alignment Engine</p>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/The_Weather_Channel_logo.svg" alt="TWC Logo">
+    <div>
+        <h1>The Weather Company — Data Package Configurator</h1>
+        <p>Layman Requirements Scraper & API Package Alignment Engine</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
