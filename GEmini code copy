@@ -186,8 +186,3 @@ if generate_btn:
                     </a>
                 </div>
                 """, unsafe_allow_html=True)
-streamlit
-requests
-beautifulsoup4
-openai
-
