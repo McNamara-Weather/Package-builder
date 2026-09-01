@@ -170,8 +170,8 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     user_query = st.text_input(
-        "Describe your client's data requirement (in plain layman terms):",
-        placeholder="e.g., I need historical wind speeds and gust alerts in Poland for insurance claims."
+        "Describe the data requirement (Can be in plain layman terms):",
+        placeholder="e.g., I want to...."
     )
 
 with col2:
