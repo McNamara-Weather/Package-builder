@@ -102,11 +102,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- SIDEBAR: API SETUP ---
+# --- SIDEBAR: API SETUP ---
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/1/15/The_Weather_Channel_logo.svg", width=120)
     st.header("Admin Controls")
-    openai_api_key = st.text_input("OpenAI API Key", type="password")
-    st.caption("Configured for automated crawling of Weather.com developer docs.")
+    
+    # Automatically check Streamlit Secrets first; fallback to text box if missing
+    if "OPENAI_API_KEY" in st.secrets:
+        openai_api_key = st.secrets["OPENAI_API_KEY"]
+        st.success("✅ OpenAI API Key loaded automatically!")
+    else:
+        openai_api_key = st.text_input("OpenAI API Key", type="password")
+        st.caption("Configured for automated crawling of Weather.com developer docs.")
 
 # --- SCRAPER FUNCTION ---
 def scrape_webpage(url):
