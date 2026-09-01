@@ -32,12 +32,11 @@ WEATHER_THEME_CSS = """
         align-items: center;
         gap: 20px;
     }
-    ..weather-header img {
-        height: 60px;
-        background-color: transparent;
-        padding: 0;
-        margin-right: 10px;
-    }
+    ...weather-header img {
+        height: 65px;
+        width: auto;
+        object-fit: contain;
+        margin-right: 12px;
     }
     .weather-header h1 {
         color: #ffffff !important;
@@ -133,30 +132,33 @@ WEATHER_THEME_CSS = """
 
 st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
 
-# --- BRANDED HEADER WITH LOGO ---
+# -------------------------------------------------------------------
+# 1. THIS IS THE END OF YOUR CSS SECTION (Look for this line)
+# -------------------------------------------------------------------
+st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
+
+
+# ===================================================================
+# 2. PLACE THE BRANDED HEADER LOGO CODE RIGHT HERE:
+# ===================================================================
 st.markdown("""
 <div class="weather-header">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/The_Weather_Channel_logo.svg/320px-The_Weather_Channel_logo.svg.png" alt="TWC Logo">
+    <img src="https://logos-world.net/wp-content/uploads/2021/08/The-Weather-Channel-Logo.png" alt="TWC Logo">
     <div>
         <h1>The Weather Company — Data Package Configurator</h1>
         <p>Layman Requirements Scraper & API Package Alignment Engine</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
+# ===================================================================
 
-# --- SIDEBAR: API SETUP ---
-# --- SIDEBAR: API SETUP ---
+
+# -------------------------------------------------------------------
+# 3. THIS IS WHAT COMES RIGHT AFTER IT (Your sidebar section)
+# -------------------------------------------------------------------
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/1/15/The_Weather_Channel_logo.svg", width=120)
     st.header("Admin Controls")
-    
-    # Automatically check Streamlit Secrets first; fallback to text box if missing
-    if "OPENAI_API_KEY" in st.secrets:
-        openai_api_key = st.secrets["OPENAI_API_KEY"]
-        st.success("✅ OpenAI API Key loaded automatically!")
-    else:
-        openai_api_key = st.text_input("OpenAI API Key", type="password")
-        st.caption("Configured for automated crawling of Weather.com developer docs.")
+    ...
 
 # --- SCRAPER FUNCTION ---
 def scrape_webpage(url):
