@@ -80,16 +80,6 @@ WEATHER_THEME_CSS = """
         color: #000000 !important;
     }
     
-    /* Card Container */
-    .weather-card {
-        background-color: #ffffff;
-        border: 1px solid #e1e8ed;
-        border-radius: 10px;
-        padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
     /* Buttons */
     .stButton>button, div[data-testid="stFormSubmitButton"]>button {
         background-color: #00509e !important;
@@ -142,7 +132,7 @@ def scrape_webpage(url):
     except Exception as e:
         return None, str(e)
 
-# --- INPUT SECTION (FORM ENABLES ENTER/RETURN KEY TO SEARCH) ---
+# --- INPUT FORM (ENABLES ENTER KEY TO EXECUTE SEARCH) ---
 with st.form(key="search_form", border=False):
     col1, col2 = st.columns([2, 1])
 
@@ -158,14 +148,11 @@ with st.form(key="search_form", border=False):
             value="https://developer.weather.com/docs/home"
         )
 
-    btn_col1, btn_col2, _ = st.columns([2, 1, 2])
-    with btn_col1:
-        generate_btn = st.form_submit_button("Generate Tailored Solution Package")
+    generate_btn = st.form_submit_button("Generate Tailored Solution Package")
 
-# Refresh button sits outside form
-with btn_col2:
-    if st.button("🔄 Refresh Page"):
-        st.rerun()
+# Refresh button placed cleanly outside form
+if st.button("🔄 Refresh Page"):
+    st.rerun()
 
 # --- EXECUTION PIPELINE ---
 if generate_btn:
@@ -201,9 +188,8 @@ if generate_btn:
                 
                 result_text = response.choices[0].message.content
 
-                # --- RESULT DISPLAY CARD (CLEAN STREAMLIT COMPONENTS) ---
+                # --- RESULT DISPLAY CARD ---
                 st.markdown("---")
-                with st.container():
-                    st.markdown(result_text)
-                    st.divider()
-                    st.link_button(f"🔗 Open Scraped Source Documentation ({source_url})", source_url)
+                st.markdown(result_text)
+                st.divider()
+                st.link_button(f"🔗 Open Scraped Source Documentation ({source_url})", source_url)
