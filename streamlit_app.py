@@ -10,6 +10,12 @@ st.set_page_config(
     layout="wide"
 )
 
+# --- AUTOMATIC API KEY FETCH FROM SECRETS ---
+if "OPENAI_API_KEY" in st.secrets:
+    openai_api_key = st.secrets["OPENAI_API_KEY"]
+else:
+    openai_api_key = ""
+
 # --- THE WEATHER COMPANY CUSTOM STYLING (CSS) ---
 WEATHER_THEME_CSS = """
 <style>
@@ -19,7 +25,7 @@ WEATHER_THEME_CSS = """
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     
-    /* Top Header Banner with Logo */
+    /* Top Header Banner */
     .weather-header {
         background: linear-gradient(135deg, #003366 0%, #00509e 100%);
         padding: 24px;
@@ -30,12 +36,6 @@ WEATHER_THEME_CSS = """
         display: flex;
         align-items: center;
         gap: 20px;
-    }
-    ...weather-header img {
-        height: 65px;
-        width: auto;
-        object-fit: contain;
-        margin-right: 12px;
     }
     .weather-header h1 {
         color: #ffffff !important;
@@ -52,10 +52,10 @@ WEATHER_THEME_CSS = """
 
     /* --- PROMINENT SEARCH INPUT FIELD STYLING --- */
     .stTextInput label {
-        font-size: 1.15rem !important;
+        font-size: 1.25rem !important;
         font-weight: 700 !important;
         color: #003366 !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 10px !important;
     }
     
     div[data-baseweb="input"] {
@@ -72,8 +72,8 @@ WEATHER_THEME_CSS = """
     }
 
     div[data-baseweb="input"] input {
-        font-size: 1.1rem !important;
-        padding: 12px 14px !important;
+        font-size: 1.15rem !important;
+        padding: 14px 16px !important;
         color: #1a1a1a !important;
     }
     
@@ -103,7 +103,7 @@ WEATHER_THEME_CSS = """
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
-    /* Links */
+    /* Green Source Links */
     a.weather-link-btn {
         display: inline-block;
         background-color: #28a745;
@@ -117,20 +117,12 @@ WEATHER_THEME_CSS = """
     a.weather-link-btn:hover {
         background-color: #218838;
     }
-    
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #002244;
-        color: white;
-    }
-    [data-testid="stSidebar"] * {
-        color: white !important;
-    }
 </style>
 """
 
 st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
-# --- BRANDED HEADER WITH LOGO ---
+
+# --- BRANDED HEADER WITH EMBEDDED LOGO ---
 st.markdown("""
 <div class="weather-header">
     <svg width="65" height="65" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
@@ -144,9 +136,6 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-with st.sidebar:
-    st.header("Admin Controls")
-    ...
 
 # --- SCRAPER FUNCTION ---
 def scrape_webpage(url):
@@ -170,8 +159,8 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     user_query = st.text_input(
-        "Describe the data requirement (Can be in plain layman terms):",
-        placeholder="e.g., I want to...."
+        "Type off of your required needs",
+        placeholder="e.g., I need historical wind speeds and gust alerts in Poland for insurance claims."
     )
 
 with col2:
@@ -180,14 +169,22 @@ with col2:
         value="https://developer.weather.com/docs/home"
     )
 
-generate_btn = st.button("Generate Tailored Solution Package")
+# --- ACTION BUTTONS ---
+btn_col1, btn_col2, _ = st.columns([2, 1, 2])
+
+with btn_col1:
+    generate_btn = st.button("Generate Tailored Solution Package")
+
+with btn_col2:
+    if st.button("🔄 Refresh Page"):
+        st.rerun()
 
 # --- EXECUTION PIPELINE ---
 if generate_btn:
     if not openai_api_key:
-        st.error("Please provide an OpenAI API Key in the sidebar.")
+        st.error("OpenAI API Key is missing. Please ensure OPENAI_API_KEY is configured in Streamlit Secrets.")
     elif not user_query or not source_url:
-        st.error("Please fill in all fields.")
+        st.error("Please fill in your required needs.")
     else:
         with st.spinner("Scraping documentation & aligning package..."):
             scraped_text, error = scrape_webpage(source_url)
