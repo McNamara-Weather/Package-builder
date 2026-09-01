@@ -109,7 +109,7 @@ st.markdown("""
         <circle cx="45" cy="42" r="14" fill="#ffcc00"/>
     </svg>
     <div>
-        <h1>The Weather Company — Data Package Configurator</h1>
+        <h1>WxData — Package Configurator</h1>
         <p>Layman Requirements Scraper & API Package Alignment Engine</p>
     </div>
 </div>
