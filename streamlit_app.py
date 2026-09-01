@@ -220,13 +220,9 @@ if generate_btn:
                 
                 result_text = response.choices[0].message.content
 
-                # --- RESULT DISPLAY CARD ---
-                st.markdown(f"""
-                <div class="weather-card">
-                    {result_text}
-                    <hr style="border:0; border-top:1px solid #e1e8ed; margin: 20px 0;">
-                    <a href="{source_url}" target="_blank" class="weather-link-btn">
-                        🔗 Open Scraped Source Documentation ({source_url})
-                    </a>
-                </div>
-                """, unsafe_allow_html=True)
+               # --- RESULT DISPLAY CARD ---
+                with st.container():
+                    st.markdown("### 📦 Generated Solution Package")
+                    st.markdown(result_text)
+                    st.divider()
+                    st.link_button(f"🔗 Open Scraped Source Documentation ({source_url})", source_url)
