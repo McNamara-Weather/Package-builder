@@ -7,24 +7,19 @@ import json
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="Weather Data Package Builder | Powered by The Weather Company Docs", 
-    page_icon="🌤️", 
+    page_title="Data Package Configurator", 
+    page_icon="📦", 
     layout="wide"
 )
 
 # --- AUTOMATIC API KEY FETCH FROM SECRETS ---
-if "OPENAI_API_KEY" in st.secrets:
-    openai_api_key = st.secrets["OPENAI_API_KEY"]
-else:
-    openai_api_key = ""
+openai_api_key = st.secrets.get("OPENAI_API_KEY", "")
 
 # --- AI & REGEX SECURITY GUARDRAIL FUNCTION ---
 def check_for_restricted_data(text, client):
     """
     Scans input text for sensitive PII, Company Names, and Personal Human Names.
-    Uses fast Regex for hard metrics, and AI Guardrail for contextual Names & Companies.
     """
-    # 1. Fast Regex for Rigid PII (SSN, Cards, Emails, Phones)
     patterns = {
         "Social Security Number (SSN)": r'\b\d{3}[-.\s]?\d{2}[-.\s]?\d{4}\b',
         "Credit/Debit Card Number": r'\b(?:\d[ -]*?){13,16}\b',
@@ -36,16 +31,15 @@ def check_for_restricted_data(text, client):
         if re.search(pattern, text, re.IGNORECASE):
             return True, data_type
 
-    # 2. AI Security Pre-Check for Human Names & Company Names
     guardrail_prompt = f"""
     Analyze the following user search query for compliance: "{text}"
 
     Does this query contain ANY of the following restricted items?
-    1. Personal Human Names (e.g., "John Sullivan", "John", "Sullivan", "Mary", etc., regardless of capitalization).
-    2. Specific Company / Organization / Brand Names (e.g., "Acme", "IBM", "Google", "Walmart", etc.).
+    1. Personal Human Names (e.g., "John Sullivan", "Mary", etc.).
+    2. Specific Company / Organization / Brand Names (e.g., "Acme", "IBM", "Microsoft", etc.).
     3. Any other Personally Identifiable Information (PII).
 
-    Return ONLY a JSON object formatted as follows:
+    Return ONLY a JSON object:
     {{
         "contains_restricted_info": true or false,
         "detected_type": "Person Name" or "Company Name" or "PII" or "None",
@@ -64,12 +58,12 @@ def check_for_restricted_data(text, client):
         if result.get("contains_restricted_info"):
             return True, f"{result.get('detected_type')} ({result.get('detected_value')})"
     except Exception:
-        pass # Fallback if AI check fails
+        pass
 
     return False, None
 
-# --- THE WEATHER COMPANY CUSTOM STYLING (CSS) ---
-WEATHER_THEME_CSS = """
+# --- CUSTOM STYLING (CSS) ---
+THEME_CSS = """
 <style>
     /* Global Styles */
     .stApp {
@@ -78,7 +72,7 @@ WEATHER_THEME_CSS = """
     }
     
     /* Top Header Banner */
-    .weather-header {
+    .app-header {
         background: linear-gradient(135deg, #003366 0%, #00509e 100%);
         padding: 24px;
         border-radius: 12px;
@@ -89,13 +83,13 @@ WEATHER_THEME_CSS = """
         align-items: center;
         gap: 20px;
     }
-    .weather-header h1 {
+    .app-header h1 {
         color: #ffffff !important;
         font-weight: 700;
         margin: 0;
         font-size: 2.2rem;
     }
-    .weather-header p {
+    .app-header p {
         color: #b0c4de !important;
         margin-top: 5px;
         font-size: 1.05rem;
@@ -147,21 +141,31 @@ WEATHER_THEME_CSS = """
         background-color: #003366 !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
+    
+    /* Disclaimer Footer */
+    .disclaimer-footer {
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 15px;
+        border-top: 1px solid #e1e8ed;
+    }
 </style>
 """
 
-st.markdown(WEATHER_THEME_CSS, unsafe_allow_html=True)
+st.markdown(THEME_CSS, unsafe_allow_html=True)
 
-# --- BRANDED HEADER WITH EMBEDDED LOGO ---
+# --- HEADER ---
 st.markdown("""
-<div class="weather-header">
+<div class="app-header">
     <svg width="65" height="65" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
         <rect width="120" height="120" rx="20" fill="#00509e"/>
         <path d="M 30,65 A 20,20 0 0,1 65,50 A 25,25 0 0,1 100,65 A 15,15 0 0,1 95,90 L 30,90 A 15,15 0 0,1 30,65 Z" fill="#ffffff"/>
         <circle cx="45" cy="42" r="14" fill="#ffcc00"/>
     </svg>
     <div>
-        <h1>The Weather Company — Data Package Configurator</h1>
+        <h1>Data Package Configurator</h1>
         <p>Layman Requirements Scraper & API Package Alignment Engine</p>
     </div>
 </div>
@@ -196,7 +200,7 @@ with st.form(key="search_form", border=False):
 
     with col2:
         source_url = st.text_input(
-            "Weather Documentation URL:",
+            "Documentation URL:",
             value="https://developer.weather.com/docs/home"
         )
 
@@ -234,7 +238,7 @@ if generate_btn:
                     st.error(f"Error scraping docs: {error}")
                 else:
                     package_prompt = f"""
-                    You are a Solution Architect for The Weather Company.
+                    You are a Solution Architect analyzing documentation.
                     SCRAPED DOCS CONTENT: {scraped_text[:10000]}
                     CLIENT NEED: "{user_query}"
                     
@@ -242,7 +246,7 @@ if generate_btn:
                     Format using clean Markdown with headers and bullet points:
 
                     1. 📦 **Recommended Package Name & Executive Summary** (Layman summary of the total solution).
-                    2. 🏷️ **Required API Packages & Endpoints** (Specify EXACTLY which Weather Company package tier or API product—e.g., Core Weather Data, Historical On-Demand Package, Severe Weather Package, Location Services—each suggested endpoint resides in).
+                    2. 🏷️ **Required API Packages & Endpoints** (Specify EXACTLY which package tier or API product each suggested endpoint resides in).
                     3. 🛠️ **Included Capabilities** (Translate technical parameters into simple plain-English features/benefits).
                     4. 🎯 **Business Value & Alignment** (Explain why this specific package combination fits their exact query).
                     """
@@ -259,3 +263,11 @@ if generate_btn:
                     st.markdown(result_text)
                     st.divider()
                     st.link_button(f"🔗 Open Scraped Source Documentation ({source_url})", source_url)
+
+# --- DISCLAIMER FOOTER ---
+st.markdown("""
+<div class="disclaimer-footer">
+    ⚠️ <b>Internal Utility Demo Tool</b> — Powered by public online developer documentation. 
+    Restricted to authorized internal team members. Do not share externally or distribute without administrator approval.
+</div>
+""", unsafe_allow_html=True)
