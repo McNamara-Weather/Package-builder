@@ -32,12 +32,12 @@ WEATHER_THEME_CSS = """
         align-items: center;
         gap: 20px;
     }
-    .weather-header img {
-        height: 65px;
-        background-color: #ffffff;
-        padding: 6px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    ..weather-header img {
+        height: 60px;
+        background-color: transparent;
+        padding: 0;
+        margin-right: 10px;
+    }
     }
     .weather-header h1 {
         color: #ffffff !important;
