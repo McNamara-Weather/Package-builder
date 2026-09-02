@@ -267,7 +267,7 @@ if generate_btn:
 # --- DISCLAIMER FOOTER ---
 st.markdown("""
 <div class="disclaimer-footer">
-    ⚠️ <b>Internal Utility Demo Tool</b> — Powered by public online developer documentation. 
-    Restricted to authorized internal team members. Do not share externally or distribute without administrator approval.
+    ⚠️ <b> Utility Demo Tool</b> — Powered by public online developer documentation. 
+    Restricted to authorized members. Do not share or distribute without administrator approval.
 </div>
 """, unsafe_allow_html=True)
