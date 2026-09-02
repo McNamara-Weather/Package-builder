@@ -194,8 +194,8 @@ with st.form(key="search_form", border=False):
 
     with col1:
         user_query = st.text_input(
-            "Type off of your required needs",
-            placeholder="e.g., I need historical wind speeds and gust alerts in Poland for insurance claims."
+            "Enter only the required needs",
+            placeholder="e.g., I need or I want etc."
         )
 
     with col2:
