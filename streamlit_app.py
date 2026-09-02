@@ -171,7 +171,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- SCRAPER FUNCTION ---
+# --- SCRAPER FUNCTION (PRESERVES SIDEBAR/NAVIGATION TO CAPTURE 'PACKAGES') ---
 def scrape_webpage(url):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     try:
@@ -179,12 +179,20 @@ def scrape_webpage(url):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        for tag in soup(["script", "style", "nav", "footer", "header", "noscript"]):
+        # Only strip scripts, styles, and footers (keep nav/aside so left-hand 'Packages' menu is scraped)
+        for tag in soup(["script", "style", "footer", "noscript"]):
             tag.decompose()
             
-        content_tags = soup.find_all(['h1', 'h2', 'h3', 'p', 'li', 'td', 'th'])
-        clean_lines = [tag.get_text(strip=True) for tag in content_tags if len(tag.get_text(strip=True)) > 5]
-        return "\n".join(clean_lines), None
+        content_tags = soup.find_all(['h1', 'h2', 'h3', 'h4', 'p', 'li', 'td', 'th', 'a', 'span'])
+        clean_lines = [tag.get_text(strip=True) for tag in content_tags if len(tag.get_text(strip=True)) > 2]
+        
+        # Deduplicate consecutive lines
+        deduped = []
+        for line in clean_lines:
+            if not deduped or line != deduped[-1]:
+                deduped.append(line)
+                
+        return "\n".join(deduped), None
     except Exception as e:
         return None, str(e)
 
@@ -238,17 +246,25 @@ if generate_btn:
                     st.error(f"Error scraping docs: {error}")
                 else:
                     package_prompt = f"""
-                    You are a Solution Architect analyzing documentation.
-                    SCRAPED DOCS CONTENT: {scraped_text[:10000]}
+                    You are a Solution Architect analyzing developer portal documentation.
+                    
+                    SCRAPED WEBSITE CONTENT (Includes sidebars and navigation menus):
+                    {scraped_text[:12000]}
+                    
                     CLIENT NEED: "{user_query}"
                     
-                    Build a crisp, executive solution package for the client.
-                    Format using clean Markdown with headers and bullet points:
+                    INSTRUCTIONS:
+                    1. Search the scraped content specifically for the left-hand navigation/header section labeled "Packages" (or official package tiers listed on the site).
+                    2. Identify the EXACT official Package name(s) listed under that "Packages" navigation section that contain the endpoints/data required for the client's request.
+                    3. CAVEAT / ORPHANED ENDPOINT CHECK: Determine if any required endpoint or dataset does NOT roll up under an official package listed in the "Packages" menu (e.g., standalone APIs, legacy feeds, or special feeds like PSW Historical Data).
+                    
+                    Build a crisp, executive solution package formatted in Markdown:
 
-                    1. 📦 **Recommended Package Name & Executive Summary** (Layman summary of the total solution).
-                    2. 🏷️ **Required API Packages & Endpoints** (Specify EXACTLY which package tier or API product each suggested endpoint resides in).
-                    3. 🛠️ **Included Capabilities** (Translate technical parameters into simple plain-English features/benefits).
-                    4. 🎯 **Business Value & Alignment** (Explain why this specific package combination fits their exact query).
+                       - 📦 **Official Website Package Match** (State the EXACT package name(s) as listed under the 'Packages' menu on the website).
+                       - 🏷️ **Required Endpoints & Data Fields** (List the exact API endpoints/data fields that fulfill the need).
+                       - ⚠️ **Caveats & Orphaned Endpoints** (If any required endpoint or data feed does NOT belong to an official listed package, explicitly call it out here as an "Orphaned API Endpoint" with a caveat explanation, e.g., "PSW Historical Data is an orphaned/standalone API endpoint and does not roll up under a standard Package tier").
+                       - 🛠️ **Included Capabilities (Layman's Terms)** (Explain in simple plain-English features what these endpoints do).
+                       - 🎯 **Business Value & Alignment** (Explain why subscribing to this specific package/endpoint combination fulfills the query).
                     """
 
                     response = client.chat.completions.create(
